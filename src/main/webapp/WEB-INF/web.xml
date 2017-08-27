@@ -1,0 +1,119 @@
+<web-app version="2.4"
+         xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+	http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+
+    <display-name>Spring MVC Application</display-name>
+
+    <!-- context监听器 启动spring容器加载指定配置文件的配置信息-->
+    <listener>
+        <listener-class>org.blabla.Listener.FirstServletContextListener</listener-class>
+    </listener>
+    <!--指定加载spring配置文件的路径，默认的路径是"/WEB-INF/applicationContext.xml，
+    指定多个配置文件以逗号分隔，支持通配符表达式入context-*.xml,整个加载配置过程由ContextLoader来完成。-->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath*:spring-config.xml</param-value>
+    </context-param>
+
+    <!--会话监听器-->
+    <listener>
+        <listener-class>org.blabla.Listener.FirstHttpSessionListener</listener-class>
+    </listener>
+    <!--会话超时时间,单位分钟-->
+    <session-config>
+        <session-timeout>1</session-timeout>
+    </session-config>
+
+    <!--HTTP请求监听器-->
+    <listener>
+        <listener-class>org.blabla.Listener.FirstServletRequestListener</listener-class>
+    </listener>
+
+    <!--过滤器1-->
+    <filter>
+        <!--过滤器名称-->
+        <filter-name>firstFilter</filter-name>
+        <!--过滤器的实现类-->
+        <filter-class>org.blabla.filter.FirstFilter</filter-class>
+        <init-param>
+            <!--参数-->
+            <param-name>key1</param-name>
+            <param-value>value1</param-value>
+        </init-param>
+        <init-param>
+            <description>参数2</description>
+            <param-name>key2</param-name>
+            <param-value>value2</param-value>
+        </init-param>
+    </filter>
+
+    <!--过滤器2-->
+    <filter>
+        <filter-name>DelegatingFilterProxy</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+        <init-param>
+            <!--elegatingFilterProxy的filter配置中配置初始参数：targetBeanName，对应到Spring配置中的beanname-->
+            <!--如果要保留Filter原有的init，destroy方法的调用，还需要配置初始化参数targetFilterLifecycle为true，该参数默认为false-->
+            <param-name>targetBeanName</param-name>
+            <param-value>secondFilter</param-value>
+        </init-param>
+        <init-param>
+            <param-name>targetFilterLifecycle</param-name>
+            <param-value>true</param-value>
+            <!-- 此参数必需设置-->
+        </init-param>
+    </filter>
+
+    <!--过滤器映射，定义过滤器拦截的URL-->
+    <filter-mapping>
+        <!--过滤器名称-->
+        <filter-name>firstFilter</filter-name>
+        <!-- 负责拦截全部以/开始的请求-->
+        <url-pattern>/</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <!--过滤器名称-->
+        <filter-name>DelegatingFilterProxy</filter-name>
+        <!-- 负责拦截全部以/开始的请求-->
+        <url-pattern>/</url-pattern>
+    </filter-mapping>
+    <!--begin do the encoding filter!-->
+    <!--name=key2 value=value2-->
+    <!--name=key1 value=value1-->
+    <!--begin do the encoding filter!-->
+    <!--name=targetFilterLifecycle value=true-->
+    <!--name=targetBeanName value=secondFilter-->
+
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>*.jpg</url-pattern>
+    </servlet-mapping>
+
+    <!--分发servlet可以配置多个,将拦截到的URL交给controller-->
+    <servlet>
+        <!--servlet名称-->
+        <servlet-name>first-dispatcher</servlet-name>
+        <!--servlet的执行类，可自定义继承自HttpServlet-->
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <!--指定servlet的配置文件，默认框架在WEfirst-dispatcherB-INF文件夹下寻找名为[servlet-name]-servlet.xml 的配置文件-->
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <!--其中<param-value>**.xml</param-value> 这里可以使用多种写法-->
+            <!--1、不写,使用默认值:/WEB-INF/<servlet-name>-servlet.xml-->
+            <!--2、<param-value>/WEB-INF/classes/dispatcher-servlet.xml</param-value>-->
+            <!--3、<param-value>classpath*:dispatcher-servlet.xml</param-value>-->
+            <!--4、多个值用逗号分隔-->
+            <param-value>classpath:first-dispatcher-servlet.xml</param-value>
+        </init-param>
+        <!--指定servlet的启动顺序，本servlet第一个启动-->
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <!--servlet名称要匹配-->
+        <servlet-name>first-dispatcher</servlet-name>
+        <!--会拦截URL中带“/”的请求。-->
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
+</web-app>
